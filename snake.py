@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import numpy as np
 
 class Snake():
     def __init__(self):
@@ -20,6 +21,7 @@ class Snake():
         return self.positions
 
     def remove_powerup(self):
+        print('removing powerup')
         self.powerup = False
 
     def add_powerup(self):
@@ -34,7 +36,7 @@ class Snake():
 
     def move(self):
         cur = self.get_head_position()
-        x,y = self.direction
+        x, y = self.direction
         new = (((cur[0]+(x*gridsize))%screen_width), (cur[1]+(y*gridsize))%screen_height)
         if len(self.positions) > 2 and new in self.positions[2:]:
             self.reset()
@@ -71,15 +73,22 @@ class Snake():
                     self.turn(right)
 
 class Food():
-    def __init__(self, snake_pos):
-        self.position = (0,0)
+    def __init__(self, all_pos, snake_pos):
+        self.position = None #(0,0)
         self.color = (223, 163, 49)
+        self.all_pos = all_pos 
         self.randomize_position(snake_pos)
 
-    def randomize_position(self, snake_pos):
-        self.position = (random.randint(0, grid_width-1)*gridsize, random.randint(0, grid_height-1)*gridsize)
-        if self.position in snake_pos:
-            self.randomize_position(snake_pos)
+        
+    def randomize_position(self, snake_pos, posion_pos = None, powerup_pos= None ):
+        
+
+        available_pos = [x for x in self.all_pos if x not in [ *snake_pos, posion_pos, powerup_pos] ]
+        random.shuffle(available_pos)
+        
+        self.position = available_pos.pop()
+        
+                  
 
     def draw(self, surface):
         r = pygame.Rect((self.position[0], self.position[1]), (gridsize, gridsize))
@@ -90,41 +99,48 @@ class Food():
         return self.position
 
 class BadFood():
-    def __init__(self, snake_pos, food_pos):
-        self.position = (0,0)
+    def __init__(self, all_pos, snake_pos , food_pos):
+        self.position = None
         self.color = (100, 100, 20)
+        self.all_pos = all_pos
         self.randomize_position(snake_pos, food_pos)
 
-    def randomize_position(self, snake_pos, food_pos):
-        self.position = (random.randint(0, grid_width-1)*gridsize, random.randint(0, grid_height-1)*gridsize)
-        if self.position in snake_pos or self.position in food_pos:
-            self.position = ...\
-                (random.randint(0, grid_width - 1) * gridsize, random.randint(0, grid_height - 1) * gridsize)
+    def randomize_position(self, snake_pos, food_pos, powerup_pos = None):
+        
+        available_pos = [x for x in self.all_pos if x not in [ *snake_pos, food_pos, powerup_pos] ]
+        random.shuffle(available_pos)
+        self.position = available_pos.pop()
 
     def draw(self, surface):
-        r = pygame.Rect((self.position[0], self.position[1]), (gridsize, gridsize))
-        pygame.draw.rect(surface, self.color, r)
-        pygame.draw.rect(surface, (93, 216, 228), r, 1)
+        if not(self.position == None):
+            r = pygame.Rect((self.position[0], self.position[1]), (gridsize, gridsize))
+            pygame.draw.rect(surface, self.color, r)
+            pygame.draw.rect(surface, (93, 216, 228), r, 1)
 
     def get_bad_food_position(self):
         return self.position
 
 class PowerUp():
-    def __init__(self, snake_pos, food_pos, badfood_pos):
-        self.position = (0,0)
-        self.color = (1, 1, 20)
+    def __init__(self, all_pos, snake_pos, food_pos = None, badfood_pos = None):
+        self.position = None
+        self.color = (255, 192, 203)
+        self.all_pos = all_pos
         self.randomize_position(snake_pos, food_pos, badfood_pos)
-
-    def randomize_position(self, snake_pos, food_pos, badfood_pos):
-        self.position = (random.randint(0, grid_width-1)*gridsize, random.randint(0, grid_height-1)*gridsize)
-        if self.position in snake_pos or self.position in food_pos or self.position in badfood_pos:
-            self.position = ...\
-                (random.randint(0, grid_width - 1) * gridsize, random.randint(0, grid_height - 1) * gridsize)
+        
+        
+    def randomize_position(self, snake_pos, food_pos = None , poison_pos = None):
+        available_pos = [x for x in self.all_pos if x not in [ *snake_pos, food_pos, poison_pos] ]
+        random.shuffle(available_pos)
+        self.position = available_pos.pop()
+        
+    def get_powerup_position(self):
+        return self.position
 
     def draw(self, surface):
-        r = pygame.Rect((self.position[0], self.position[1]), (gridsize, gridsize))
-        pygame.draw.rect(surface, self.color, r)
-        pygame.draw.rect(surface, (93, 216, 228), r, 1)
+        if not(self.position == None):
+            r = pygame.Rect((self.position[0], self.position[1]), (gridsize, gridsize))
+            pygame.draw.rect(surface, self.color, r)
+            pygame.draw.rect(surface, (93, 216, 228), r, 1)
 
 def drawGrid(surface):
     for y in range(0, int(grid_height)):
@@ -149,6 +165,7 @@ left = (-1,0)
 right = (1,0)
 
 def main():
+    print('starting up')
     pygame.init()
 
     clock = pygame.time.Clock()
@@ -158,17 +175,25 @@ def main():
     surface = pygame.Surface(screen.get_size())
     surface = surface.convert()
     drawGrid(surface)
+    
+    #create list containing all coordinates
+    all_pos = []
+    for i in range(10):
+        for j in range(10):
+            all_pos.append((i*gridsize,j*gridsize))
 
     snake = Snake()
-    food = Food(snake.get_body_position())
-    badfood = BadFood(snake.get_body_position(), food.get_food_position())
-    powerup = PowerUp(snake.get_body_position(), food.get_food_position(), badfood.get_bad_food_position())
+    food = Food(all_pos,snake.get_body_position())
+    badfood = BadFood(all_pos, snake.get_body_position(), food.get_food_position())
+    powerup = PowerUp(all_pos,snake.get_body_position(), food.get_food_position(), badfood.get_bad_food_position())
+    
+    
 
     myfont = pygame.font.SysFont("monospace",16)
 
     while (True):
         time += 1
-        clock.tick(10)
+        clock.tick(5)
         snake.handle_keys()
         drawGrid(surface)
         snake.move()
@@ -176,21 +201,32 @@ def main():
             snake.length += 1
             snake.score += 1
             food.randomize_position(snake.get_body_position())
+        
         if snake.get_head_position() == powerup.position:
             snake.add_powerup()
             powerup.randomize_position(snake.get_body_position(), food.get_food_position(), badfood.get_bad_food_position())
-        if snake.get_head_position() == badfood.position and not snake.powerup:
-            snake.reset()
-        else:
-            snake.remove_powerup()
+            powerup.pos = None
+        
+        if snake.get_head_position() == badfood.position:
+            if snake.powerup: 
+                 snake.remove_powerup()
+                 snake.length += 1
+                 snake.score += 1
+                 badfood.randomize_position(snake.get_body_position(), food.get_food_position(), powerup.get_powerup_position())
+            else:
+                snake.reset()
+
         if time % 100 == 0:
             badfood.randomize_position(snake.get_body_position(), food.get_food_position())
         if time % 200 == 0:
             powerup.randomize_position(snake.get_body_position(), food.get_food_position(), badfood.get_bad_food_position())
         snake.draw(surface)
         food.draw(surface)
+
         badfood.draw(surface)
+        
         powerup.draw(surface)
+        
         screen.blit(surface, (0,0))
         text = myfont.render("Score {0}".format(snake.score), 1, (0,0,0))
         screen.blit(text, (5,10))
