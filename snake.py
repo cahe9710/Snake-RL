@@ -21,11 +21,11 @@ class Snake():
         return self.positions
 
     def remove_powerup(self):
-        print('removing powerup')
+
         self.powerup = False
 
     def add_powerup(self):
-        print('It got powerup!')
+
         self.powerup = True
 
     def turn(self, point):
@@ -165,7 +165,7 @@ left = (-1,0)
 right = (1,0)
 
 def main():
-    print('starting up')
+
     pygame.init()
 
     clock = pygame.time.Clock()
@@ -205,7 +205,7 @@ def main():
         if snake.get_head_position() == powerup.position:
             snake.add_powerup()
             powerup.randomize_position(snake.get_body_position(), food.get_food_position(), badfood.get_bad_food_position())
-            powerup.pos = None
+ 
         
         if snake.get_head_position() == badfood.position:
             if snake.powerup: 
