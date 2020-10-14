@@ -211,10 +211,7 @@ def run_game():
             else:
                 terminal = True
                 return snake.score
-        if time % 100 == 0:
-            poison.randomize_position(snake.get_body_position(), food.get_position(), immunity.get_position())
-        if time % 200 == 0:
-            immunity.randomize_position(snake.get_body_position(), food.get_position(), poison.get_position())
+
         snake.draw(surface)
         food.draw(surface)
 
@@ -241,6 +238,8 @@ down = (0,1)
 left = (-1,0)
 right = (1,0)
 
+
+# Run game in a desirable loop here
 for i  in range(5):
     score = run_game()
     print(score)
