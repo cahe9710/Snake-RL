@@ -81,10 +81,10 @@ class Food():
         self.randomize_position(snake_pos)
 
         
-    def randomize_position(self, snake_pos, posion_pos = None, powerup_pos= None ):
+    def randomize_position(self, snake_pos, posion_pos = None, immunity_pos= None ):
         
 
-        available_pos = [x for x in self.all_pos if x not in [ *snake_pos, posion_pos, powerup_pos] ]
+        available_pos = [x for x in self.all_pos if x not in [ *snake_pos, posion_pos, immunity_pos] ]
         random.shuffle(available_pos)
         
         self.pos = available_pos.pop()
@@ -191,7 +191,7 @@ def run_game():
         if snake.get_head_position() == food.get_position():
             snake.length += 1
             snake.score += 1
-            food.randomize_position(snake.get_body_position())
+            food.randomize_position(snake.get_body_position(), poison.get_position(), immunity.get_position())
         
         if snake.suicide:
             terminal = True
@@ -212,7 +212,7 @@ def run_game():
                 terminal = True
                 return snake.score
         if time % 100 == 0:
-            poison.randomize_position(snake.get_body_position(), food.get_position())
+            poison.randomize_position(snake.get_body_position(), food.get_position(), immunity.get_position())
         if time % 200 == 0:
             immunity.randomize_position(snake.get_body_position(), food.get_position(), poison.get_position())
         snake.draw(surface)
