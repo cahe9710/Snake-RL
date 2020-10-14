@@ -6,7 +6,7 @@ import numpy as np
 class Snake():
     def __init__(self):
         self.length = 1
-        self.pos = [((screen_width/2), (screen_height/2))]
+        self.pos = [((grid_width/2), (grid_height/2))]
         self.dir = random.choice([up, down, left, right])
         self.color = (17, 24, 47)
         # Special thanks to YouTubers Mini - Cafetos and Knivens Beast for raising this issue!
@@ -38,7 +38,7 @@ class Snake():
     def move(self):
         cur = self.get_head_position()
         x, y = self.dir
-        new = (((cur[0]+(x*gridsize))%screen_width), (cur[1]+(y*gridsize))%screen_height)
+        new = (((cur[0]+x)%grid_width), (cur[1]+y)%grid_height)
         if len(self.pos) > 2 and new in self.pos[2:]:
             self.suicide = True
         else:
@@ -54,7 +54,7 @@ class Snake():
 
     def draw(self,surface):
         for p in self.pos:
-            r = pygame.Rect((p[0], p[1]), (gridsize,gridsize))
+            r = pygame.Rect((p[0]*sq_size, p[1]*sq_size), (sq_size,sq_size))
             pygame.draw.rect(surface, self.color, r)
             pygame.draw.rect(surface, (93,216, 228), r, 1)
 
@@ -92,7 +92,7 @@ class Food():
                   
 
     def draw(self, surface):
-        r = pygame.Rect((self.pos[0], self.pos[1]), (gridsize, gridsize))
+        r = pygame.Rect((self.pos[0]*sq_size, self.pos[1]*sq_size), (sq_size, sq_size))
         pygame.draw.rect(surface, self.color, r)
         pygame.draw.rect(surface, (93, 216, 228), r, 1)
 
@@ -114,7 +114,7 @@ class Poison():
 
     def draw(self, surface):
         if not(self.pos == None):
-            r = pygame.Rect((self.pos[0], self.pos[1]), (gridsize, gridsize))
+            r = pygame.Rect((self.pos[0]*sq_size, self.pos[1]*sq_size), (sq_size, sq_size))
             pygame.draw.rect(surface, self.color, r)
             pygame.draw.rect(surface, (93, 216, 228), r, 1)
 
@@ -139,7 +139,7 @@ class Immunity():
 
     def draw(self, surface):
         if not(self.pos == None):
-            r = pygame.Rect((self.pos[0], self.pos[1]), (gridsize, gridsize))
+            r = pygame.Rect((self.pos[0]*sq_size, self.pos[1]*sq_size), (sq_size, sq_size))
             pygame.draw.rect(surface, self.color, r)
             pygame.draw.rect(surface, (93, 216, 228), r, 1)
 
@@ -147,10 +147,10 @@ def drawGrid(surface):
     for y in range(0, int(grid_height)):
         for x in range(0, int(grid_width)):
             if (x+y)%2 == 0:
-                r = pygame.Rect((x*gridsize, y*gridsize), (gridsize,gridsize))
+                r = pygame.Rect((x*sq_size, y*sq_size), (sq_size,sq_size))
                 pygame.draw.rect(surface,(93,216,228), r)
             else:
-                rr = pygame.Rect((x*gridsize, y*gridsize), (gridsize,gridsize))
+                rr = pygame.Rect((x*sq_size, y*sq_size), (sq_size,sq_size))
                 pygame.draw.rect(surface, (84,194,205), rr)
 
 def run_game():
@@ -169,7 +169,7 @@ def run_game():
     all_pos = []
     for i in range(10):
         for j in range(10):
-            all_pos.append((i*gridsize,j*gridsize))
+            all_pos.append((i,j))
 
     snake = Snake()
     food = Food(all_pos,snake.get_body_position())
@@ -227,14 +227,14 @@ def run_game():
         screen.blit(text, (5,10))
         pygame.display.update()
         
+        
+sq_size = 50
+grid_width = 10
+grid_height = 10  
 
 
-screen_width = 480
-screen_height = 480
-
-gridsize = 48
-grid_width = screen_width/gridsize
-grid_height = screen_height/gridsize
+screen_width = grid_width*sq_size
+screen_height = grid_height*sq_size
 
 up = (0,-1)
 down = (0,1)
